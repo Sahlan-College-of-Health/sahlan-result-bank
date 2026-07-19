@@ -2739,26 +2739,44 @@ async function viewResultRecord(resultId) {
 
 
 function printResultDocument(mode = "semester") {
-  document.body.classList.remove("print-session-result", "print-transcript", "print-semester-result");
+  const resultElement = document.querySelector(".official-result");
 
-  const className = mode === "session"
-    ? "print-session-result"
-    : mode === "transcript"
-      ? "print-transcript"
-      : "print-semester-result";
+  if (!resultElement) {
+    alert("No result is available for printing.");
+    return;
+  }
 
-  document.body.classList.add(className);
+  // Remove an older print container, if present.
+  document.getElementById("printOnlyContainer")?.remove();
+
+  // Create a completely separate print-only area.
+  const printContainer = document.createElement("div");
+  printContainer.id = "printOnlyContainer";
+  printContainer.className = `print-only-container print-${mode}`;
+
+  const resultClone = resultElement.cloneNode(true);
+
+  // Prevent duplicate IDs in the cloned result.
+  resultClone.removeAttribute("id");
+  resultClone.querySelectorAll("[id]").forEach(element => {
+    element.removeAttribute("id");
+  });
+
+  printContainer.appendChild(resultClone);
+  document.body.appendChild(printContainer);
+  document.body.classList.add("printing-result");
 
   const cleanup = () => {
-    document.body.classList.remove("print-session-result", "print-transcript", "print-semester-result");
+    document.body.classList.remove("printing-result");
+    document.getElementById("printOnlyContainer")?.remove();
     window.removeEventListener("afterprint", cleanup);
   };
 
   window.addEventListener("afterprint", cleanup);
   window.print();
 
-  // Fallback for browsers that do not reliably fire afterprint.
-  setTimeout(cleanup, 1500);
+  // Fallback for browsers that do not fire afterprint correctly.
+  setTimeout(cleanup, 3000);
 }
 
 function formatNumber(value) {
