@@ -3333,6 +3333,10 @@ async function isAdministrator(user) {
   }
 }
 
+// Always display the homepage immediately.
+// Firebase will replace it with the correct page after authentication succeeds.
+showPublicHome();
+
 onAuthStateChanged(auth, async (user) => {
   state.user = user;
 
