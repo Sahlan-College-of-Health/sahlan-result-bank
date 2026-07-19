@@ -867,7 +867,7 @@ th {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 2mm;
+    margin: 8mm;
   }
 
   html,
@@ -914,10 +914,10 @@ th {
 
   /* Reduce complete Year/Session results so both semesters fit on one A4 page. */
   body.printing-result #printOnlyContainer.print-session .official-result {
-    zoom: 0.88;
-    width: 113.64% !important;
-    transform-origin: top left !important;
-  }
+  zoom: 1 !important;
+  width: 100% !important;
+  transform: none !important;
+ }
 
   body.printing-result .result-header {
     display: flex !important;
@@ -935,23 +935,26 @@ th {
 
   body.printing-result .result-header h1 {
     margin: 0 !important;
-    font-size: 11pt !important;
-    line-height: 1.06 !important;
+    font-size: 15pt !important;
+    font-weight: 800 !important;
+    line-height: 1.05 !important;
   }
 
   body.printing-result .result-header h2 {
-    margin: 0.5mm 0 0 !important;
-    font-size: 8.3pt !important;
-    line-height: 1.04 !important;
+    margin: 1mm 0 0 !important;
+    font-size: 10pt !important;
+    font-weight: 800 !important;
+    line-height: 1.05 !important;
   }
 
   body.printing-result .student-detail-grid {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 0.7mm 2mm !important;
-    margin: 0 0 1mm !important;
-    font-size: 7.2pt !important;
-    line-height: 1.12 !important;
+    gap: 1.5mm 5mm !important;
+    margin: 0 0 3mm !important;
+    font-size: 8.5pt !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
   }
 
   body.printing-result .semester-block {
@@ -968,7 +971,8 @@ th {
 
   body.printing-result .semester-heading h3 {
     margin: 0 !important;
-    font-size: 7.2pt !important;
+    font-size: 9pt !important;
+    font-weight: 800 !important;
   }
 
   body.printing-result .result-table-wrap {
@@ -980,19 +984,29 @@ th {
     width: 100% !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;
-    font-size: 6.25pt !important;
-    line-height: 1.02 !important;
+    font-size: 7.4pt !important;
+    font-weight: 600 !important;
+    line-height: 1.05 !important;
   }
 
   body.printing-result .result-table-wrap th,
   body.printing-result .result-table-wrap td {
-    padding: 0.38mm 0.45mm !important;
-    border: 0.2mm solid #cfd7e3 !important;
+    padding: 0.55mm 0.65mm !important;
+    border: 0.25mm solid #9caec4 !important;
     vertical-align: middle !important;
     white-space: normal !important;
     overflow-wrap: anywhere !important;
   }
 
+  body.printing-result .result-table-wrap th {
+    font-weight: 800 !important;
+    color: #07366f !important;
+  }
+
+  body.printing-result .result-table-wrap td {
+    font-weight: 600 !important;
+  }
+  
   body.printing-result .result-table-wrap th:nth-child(1),
   body.printing-result .result-table-wrap td:nth-child(1) {
     width: 5% !important;
@@ -1036,11 +1050,12 @@ th {
   body.printing-result .semester-summary {
     display: flex !important;
     flex-wrap: wrap !important;
-    gap: 0.45mm 2.2mm !important;
+    gap: 0.6mm 3mm !important;
     margin: 0 !important;
-    padding: 0.7mm 1mm !important;
-    font-size: 6.2pt !important;
-    line-height: 1.05 !important;
+    padding: 1mm 1.5mm !important;
+    font-size: 7pt !important;
+    font-weight: 700 !important;
+    line-height: 1.08 !important;
   }
 
   body.printing-result .final-summary {
@@ -1056,13 +1071,15 @@ th {
   }
 
   body.printing-result .final-summary span {
-    font-size: 5.4pt !important;
-    line-height: 1.03 !important;
+    font-size: 6.3pt !important;
+    font-weight: 700 !important;
+    line-height: 1.05 !important;
   }
 
   body.printing-result .final-summary strong {
-    font-size: 6.5pt !important;
-    line-height: 1.03 !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+    line-height: 1.05 !important;
   }
 
   /* Extra blank room for stamps and handwritten signatures. */
@@ -1070,9 +1087,12 @@ th {
   body.printing-result .signature-grid {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    column-gap: 10mm !important;
+    column-gap: 12mm !important;
     align-items: end !important;
-    margin: 16mm 0 0 !important;
+
+    /* Large blank area for handwritten signatures */
+    margin: 26mm 0 0 !important;
+
     padding: 0 2mm !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -1086,16 +1106,20 @@ th {
   body.printing-result .signature-space,
   body.printing-result .signature-grid span {
     display: block !important;
-    height: 11mm !important;
+
+    /* Extra vertical signing room */
+    height: 22mm !important;
+
     border-top: 0 !important;
-    border-bottom: 0.3mm solid #111111 !important;
-    margin: 0 0 1.5mm !important;
+    border-bottom: 0.35mm solid #111111 !important;
+    margin: 0 0 2mm !important;
   }
 
   body.printing-result .signature-grid strong {
     display: block !important;
     text-align: center !important;
-    font-size: 6pt !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
     line-height: 1.15 !important;
     white-space: nowrap !important;
   }
