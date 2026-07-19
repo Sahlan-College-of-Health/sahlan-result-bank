@@ -3,18 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sahlan Result Bank</title>
+  <title>SAHLAN Result Bank Professional</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <meta name="theme-color" content="#0b4da2">
+  <meta name="description" content="SAHLAN College Student Result Bank">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/images/logo.png">
+  <link rel="stylesheet" href="assets/css/style.css?v=2.1.0">
 </head>
 <body>
-  <div id="app"></div>
+  <div id="networkBanner" class="network-banner hidden" role="status"></div>
+  <div id="app">
+    <main class="app-loading">
+      <img src="assets/images/logo.png" alt="SAHLAN logo">
+      <div class="loading-ring"></div>
+      <p>Loading SAHLAN Result Bank Professional...</p>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/bootstrap.js?v=2.1.0"></script>
 </body>
 </html>
+
