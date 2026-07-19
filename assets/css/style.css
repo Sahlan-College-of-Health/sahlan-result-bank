@@ -648,45 +648,9 @@ th {
   }
 }
 
-@media print {
-  body {
-    background: #fff !important;
-  }
 
-  .topbar,
-  .sidebar,
-  .no-print {
-    display: none !important;
-  }
 
-  .layout {
-    display: block !important;
-  }
 
-  .main {
-    padding: 0 !important;
-  }
-
-  .official-result {
-    box-shadow: none;
-    border: 0;
-    border-radius: 0;
-    padding: 10mm;
-  }
-
-  .result-table-wrap {
-    overflow: visible;
-  }
-
-  .result-table-wrap table {
-    font-size: 9pt;
-  }
-
-  @page {
-    size: A4;
-    margin: 8mm;
-  }
-}
 
 
 .session-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
@@ -768,7 +732,6 @@ th {
 @media(max-width:760px){.backup-grid{grid-template-columns:1fr}}
 
 
-/* Version 1.1 — compact complete-session A4 printing */
 .compact-a4-result .result-header {
   padding-bottom: 10px;
   margin-bottom: 12px;
@@ -871,141 +834,31 @@ th {
   font-size: 0.7rem;
 }
 
-@media print {
-  html, body {
-    width: 210mm;
-    min-height: 297mm;
-  }
+/* ==========================================================
+   SAHLAN RESULT BANK VERSION 2.1
+   STUDENT LOGIN AND SINGLE RESULT-ONLY PRINT ENGINE
+   ========================================================== */
 
-  body.print-session-result .official-result:not(.session-result) {
-    display: none !important;
-  }
-
-  body.print-session-result .public-content-card,
-  body.print-session-result .card {
-    padding: 0 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-
-  body.print-session-result .session-result {
-    width: 100% !important;
-    max-width: none !important;
-    height: auto !important;
-    padding: 4mm 5mm !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
-  }
-
-  body.print-session-result .session-result .result-header {
-    padding-bottom: 2mm !important;
-    margin-bottom: 2mm !important;
-  }
-
-  body.print-session-result .session-result .result-header img {
-    width: 16mm !important;
-  }
-
-  body.print-session-result .session-result .result-header h1 {
-    font-size: 10pt !important;
-    line-height: 1.05 !important;
-  }
-
-  body.print-session-result .session-result .result-header h2 {
-    font-size: 7.5pt !important;
-    margin-top: 1mm !important;
-  }
-
-  body.print-session-result .session-result .student-detail-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 1mm 3mm !important;
-    margin-bottom: 2mm !important;
-    font-size: 6.5pt !important;
-  }
-
-  body.print-session-result .session-result .semester-block {
-    margin-top: 2mm !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  body.print-session-result .session-result .semester-heading {
-    padding: 1mm 2mm !important;
-  }
-
-  body.print-session-result .session-result .semester-heading h3 {
-    font-size: 6.5pt !important;
-  }
-
-  body.print-session-result .session-result .result-table-wrap table {
-    font-size: 5.7pt !important;
-    line-height: 1.05 !important;
-    table-layout: fixed !important;
-  }
-
-  body.print-session-result .session-result .result-table-wrap th,
-  body.print-session-result .session-result .result-table-wrap td {
-    padding: 0.65mm 0.8mm !important;
-  }
-
-  body.print-session-result .session-result .semester-summary {
-    padding: 1mm 1.5mm !important;
-    gap: 0.5mm 3mm !important;
-    font-size: 5.7pt !important;
-  }
-
-  body.print-session-result .session-result .final-summary {
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    gap: 1mm !important;
-    margin-top: 2mm !important;
-  }
-
-  body.print-session-result .session-result .final-summary > div {
-    padding: 1mm !important;
-  }
-
-  body.print-session-result .session-result .final-summary span {
-    font-size: 5pt !important;
-  }
-
-  body.print-session-result .session-result .final-summary strong {
-    font-size: 5.8pt !important;
-  }
-
-  /* Keep all management signatures on one horizontal line. */
-  body.print-session-result .signature-grid,
-  body.print-transcript .signature-grid,
-  body.print-semester-result .signature-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 8mm !important;
-    margin-top: 7mm !important;
-    font-size: 6pt !important;
-  }
-
-  body.print-session-result .signature-grid > div,
-  body.print-transcript .signature-grid > div,
-  body.print-semester-result .signature-grid > div {
-    min-width: 0 !important;
-  }
-
-  body.print-session-result .signature-grid span,
-  body.print-transcript .signature-grid span,
-  body.print-semester-result .signature-grid span {
-    margin-bottom: 1mm !important;
-  }
-
-  @page {
-    size: A4 portrait;
-    margin: 4mm;
-  }
+.student-login-modal {
+  width: min(460px, 100%);
 }
 
-/* ======================================================
-   RESULT-ONLY A4 PRINTING
-   ====================================================== */
+.student-login-subtitle {
+  margin-top: 4px;
+  color: var(--muted, #6b7280);
+  font-size: 0.84rem;
+}
+
+.default-password-note {
+  margin-top: 14px;
+  padding: 9px 12px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #6b7280;
+  background: #f4f7fb;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+}
 
 #printOnlyContainer {
   display: none;
@@ -1026,7 +879,13 @@ th {
     background: #ffffff !important;
   }
 
-  /* Hide the entire website during printing. */
+  body.printing-result {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  /* Print only the cloned official result. */
   body.printing-result > *:not(#printOnlyContainer) {
     display: none !important;
   }
@@ -1053,8 +912,7 @@ th {
     color: #111111 !important;
   }
 
-  /* Complete Year/Session result: reduce the whole layout
-     so both semesters fit on one A4 sheet. */
+  /* Reduce complete Year/Session results so both semesters fit on one A4 page. */
   body.printing-result #printOnlyContainer.print-session .official-result {
     zoom: 0.74;
     width: 135% !important;
@@ -1130,7 +988,7 @@ th {
     padding: 0.55mm 0.7mm !important;
     border: 0.2mm solid #cfd7e3 !important;
     vertical-align: middle !important;
-    word-break: normal !important;
+    white-space: normal !important;
     overflow-wrap: anywhere !important;
   }
 
@@ -1206,13 +1064,14 @@ th {
     line-height: 1.05 !important;
   }
 
-  /* Large blank area for stamps and handwritten signatures. */
+  /* Extra blank room for stamps and handwritten signatures. */
+  body.printing-result .management-signatures,
   body.printing-result .signature-grid {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     column-gap: 10mm !important;
     align-items: end !important;
-    margin: 18mm 0 0 !important;
+    margin: 22mm 0 0 !important;
     padding: 0 2mm !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -1223,15 +1082,18 @@ th {
     text-align: center !important;
   }
 
+  body.printing-result .signature-space,
   body.printing-result .signature-grid span {
     display: block !important;
-    height: 8mm !important;
+    height: 12mm !important;
+    border-top: 0 !important;
     border-bottom: 0.3mm solid #111111 !important;
     margin: 0 0 1.5mm !important;
   }
 
   body.printing-result .signature-grid strong {
     display: block !important;
+    text-align: center !important;
     font-size: 6pt !important;
     line-height: 1.15 !important;
     white-space: nowrap !important;
