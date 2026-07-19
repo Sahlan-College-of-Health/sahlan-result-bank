@@ -1,11 +1,12 @@
 
 import { auth, db } from "./firebase.js";
+import { APP_CONFIG } from "./config.js";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInAnonymously,
   signOut
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 import {
   collection,
@@ -19,14 +20,16 @@ import {
   serverTimestamp,
   writeBatch,
   deleteDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+  getDoc,
+  where
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const app = document.getElementById("app");
 
 const state = {
   user: null,
   currentView: "dashboard",
+  pendingStudentLogin: false,
   counts: {
     students: 0,
     results: 0,
@@ -43,16 +46,16 @@ function showPublicHome() {
       <section class="public-hero-card">
         <img src="assets/images/logo.png" class="public-logo" alt="School logo">
 
-        <h1>SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS</h1>
+        <h1>${APP_CONFIG.schoolName}</h1>
         <h2 class="animated-result-title">STUDENT RESULT BANK</h2>
         <p class="public-subtitle">Secure Academic Records Management System</p>
 
         <div id="publicDateTime" class="public-date-time"></div>
 
-        <button id="enterResultBank" class="enter-bank-btn">ENTER RESULT BANK</button>
+        <button id="studentLoginBtn" class="enter-bank-btn">STUDENT LOGIN</button>
 
         <footer>
-          © 2026 SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS
+          © 2026 ${APP_CONFIG.schoolName} · Professional Edition v2.1
         </footer>
       </section>
 
@@ -62,20 +65,187 @@ function showPublicHome() {
 
   updatePublicClock();
 
-  document.getElementById("openAdminLogin").addEventListener("click", openAdminLoginModal);
-  document.getElementById("enterResultBank").addEventListener("click", async () => {
-    const button = document.getElementById("enterResultBank");
-    button.disabled = true;
-    button.textContent = "OPENING RESULT BANK...";
+  document
+    .getElementById("openAdminLogin")
+    .addEventListener("click", openAdminLoginModal);
 
-    try {
-      await signInAnonymously(auth);
-    } catch (error) {
-      button.disabled = false;
-      button.textContent = "ENTER RESULT BANK";
-      alert(friendlyAuthError(error.code));
-    }
-  });
+  document
+    .getElementById("studentLoginBtn")
+    .addEventListener("click", openStudentLoginModal);
+}
+
+function openStudentLoginModal() {
+  const host = document.getElementById("adminLoginModalHost");
+
+  host.innerHTML = `
+    <div class="modal-backdrop" id="studentLoginBackdrop">
+      <section class="student-modal student-login-modal">
+        <div class="modal-head">
+          <div>
+            <h3>Student Login</h3>
+            <p class="student-login-subtitle">Enter your matric number to open your academic record.</p>
+          </div>
+          <button id="closeStudentLogin" class="icon-btn" type="button">✕</button>
+        </div>
+
+        <form id="studentLoginForm">
+          <div class="form-group">
+            <label for="studentLoginMatric">Matric Number</label>
+            <input
+              id="studentLoginMatric"
+              type="text"
+              required
+              autocomplete="username"
+              placeholder="Enter your matric number"
+            >
+          </div>
+
+          <div class="form-group" style="margin-top:14px">
+            <label for="studentLoginPassword">Password</label>
+            <input
+              id="studentLoginPassword"
+              type="password"
+              required
+              autocomplete="current-password"
+              placeholder="Enter your password"
+            >
+          </div>
+
+          <button
+            id="studentLoginSubmit"
+            class="primary-btn"
+            type="submit"
+            style="width:100%;margin-top:18px"
+          >
+            OPEN MY RESULT
+          </button>
+
+          <div id="studentLoginMessage"></div>
+        </form>
+
+        <p class="default-password-note">
+          Default password: <strong>sch12345</strong>
+        </p>
+      </section>
+    </div>
+  `;
+
+  const closeStudentLogin = () => {
+    state.pendingStudentLogin = false;
+    host.innerHTML = "";
+  };
+
+  document
+    .getElementById("closeStudentLogin")
+    .addEventListener("click", closeStudentLogin);
+
+  document
+    .getElementById("studentLoginBackdrop")
+    .addEventListener("click", event => {
+      if (event.target.id === "studentLoginBackdrop") {
+        closeStudentLogin();
+      }
+    });
+
+  document
+    .getElementById("studentLoginForm")
+    .addEventListener("submit", async event => {
+      event.preventDefault();
+
+      const rawMatricNumber = document
+        .getElementById("studentLoginMatric")
+        .value
+        .trim();
+
+      const password =
+        document.getElementById("studentLoginPassword").value;
+
+      const button =
+        document.getElementById("studentLoginSubmit");
+
+      const message =
+        document.getElementById("studentLoginMessage");
+
+      if (password !== "sch12345") {
+        message.innerHTML = `
+          <div class="message error">
+            Incorrect password.
+          </div>
+        `;
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "CHECKING STUDENT RECORD...";
+      message.innerHTML = `<div class="message">Please wait...</div>`;
+      state.pendingStudentLogin = true;
+
+      try {
+        if (!auth.currentUser) {
+          await signInAnonymously(auth);
+        }
+
+        let studentDocument = null;
+
+        // Fast exact search first.
+        const exactSnapshot = await getDocs(
+          query(
+            collection(db, "students"),
+            where("matricNumber", "==", rawMatricNumber),
+            limit(1)
+          )
+        );
+
+        if (!exactSnapshot.empty) {
+          studentDocument = exactSnapshot.docs[0];
+        }
+
+        // Case-insensitive fallback for older imported records.
+        if (!studentDocument) {
+          const normalizedMatric = rawMatricNumber.toUpperCase();
+          const allStudents = await getDocs(collection(db, "students"));
+
+          studentDocument = allStudents.docs.find(item =>
+            String(item.data().matricNumber || "")
+              .trim()
+              .toUpperCase() === normalizedMatric
+          );
+        }
+
+        if (!studentDocument) {
+          throw new Error("No student was found with that matric number.");
+        }
+
+        const student = {
+          id: studentDocument.id,
+          ...studentDocument.data()
+        };
+
+        host.innerHTML = "";
+        state.pendingStudentLogin = false;
+
+        await renderPublicStudentProfile(
+          student.id,
+          student.admissionSession
+        );
+      } catch (error) {
+        console.error("Student login error:", error);
+
+        state.pendingStudentLogin = false;
+        button.disabled = false;
+        button.textContent = "OPEN MY RESULT";
+
+        message.innerHTML = `
+          <div class="message error">
+            ${escapeHtml(
+              error.code === "auth/network-request-failed"
+                ? friendlyAuthError(error.code)
+                : error.message
+            )}
+          </div>
+        `;
+      }
+    });
 }
 
 function updatePublicClock() {
@@ -159,7 +329,7 @@ function friendlyAuthError(code) {
     "auth/user-not-found": "No administrator account was found.",
     "auth/wrong-password": "Incorrect password.",
     "auth/too-many-requests": "Too many attempts. Please wait and try again.",
-    "auth/network-request-failed": "Network error. Check your internet connection."
+    "auth/network-request-failed": "Firebase Authentication could not reach Google's identity server. Try another network or mobile hotspot, disable VPN/proxy/ad-blocking antivirus temporarily, and confirm identitytoolkit.googleapis.com is not blocked."
   };
 
   return messages[code] || "Login failed. Please check your details.";
@@ -187,7 +357,7 @@ function publicShell(content) {
         <div class="brand">
           <img src="assets/images/logo.png" alt="School logo">
           <div>
-            <h1>SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS</h1>
+            <h1>${APP_CONFIG.schoolName}</h1>
             <small>Student Result Bank</small>
           </div>
         </div>
@@ -463,7 +633,7 @@ function dashboardLayout(content) {
           <button id="menuBtn" class="icon-btn mobile-menu">☰</button>
           <img src="assets/images/logo.png" alt="School logo">
           <div>
-            <h1>SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS</h1>
+            <h1>${APP_CONFIG.schoolName}</h1>
             <small>Student Result Bank</small>
           </div>
         </div>
@@ -476,7 +646,7 @@ function dashboardLayout(content) {
 
       <div class="layout">
         <aside id="sidebar" class="sidebar">
-          <div class="sidebar-title">ADMINISTRATION</div>
+          <div class="sidebar-title">ADMINISTRATION</div><div class="version-badge">Professional v${APP_CONFIG.version}</div>
           <nav class="nav-list">
             ${navButton("dashboard", "Dashboard")}
             ${navButton("browse", "Browse Result Bank")}
@@ -551,6 +721,19 @@ async function renderDashboard() {
       ${statCard(state.counts.results, "Result Records")}
       ${statCard(state.counts.courses, "Courses")}
       ${statCard(state.counts.sessions, "Admission Sessions")}
+    </section>
+
+    <section class="professional-status-grid">
+      <article class="status-panel">
+        <span class="status-dot"></span>
+        <div><strong>Firebase Connected</strong><small>Authentication and Firestore ready</small></div>
+      </article>
+      <article class="status-panel">
+        <strong>CGPA Scale</strong><small>${gradingSettings.scale || APP_CONFIG.cgpaScale}.0 grading system</small>
+      </article>
+      <article class="status-panel">
+        <strong>Professional Edition</strong><small>Version ${APP_CONFIG.version}</small>
+      </article>
     </section>
 
     <section class="section">
@@ -866,7 +1049,7 @@ async function renderSettings() {
       <form id="settingsForm" class="form-grid">
         <div class="form-group full">
           <label for="schoolName">School Name</label>
-          <input id="schoolName" value="SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS" required>
+          <input id="schoolName" value="${APP_CONFIG.schoolName}" required>
         </div>
 
         <div class="form-group">
@@ -2655,7 +2838,7 @@ async function viewResultRecord(resultId) {
         <header class="result-header">
           <img src="assets/images/logo.png" alt="School logo">
           <div>
-            <h1>SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS</h1>
+            <h1>${APP_CONFIG.schoolName}</h1>
             <h2>OFFICIAL SEMESTER RESULT</h2>
           </div>
         </header>
@@ -2746,18 +2929,15 @@ function printResultDocument(mode = "semester") {
     return;
   }
 
-  // Remove an older print container, if present.
   document.getElementById("printOnlyContainer")?.remove();
 
-  // Create a completely separate print-only area.
   const printContainer = document.createElement("div");
   printContainer.id = "printOnlyContainer";
   printContainer.className = `print-only-container print-${mode}`;
 
   const resultClone = resultElement.cloneNode(true);
-
-  // Prevent duplicate IDs in the cloned result.
   resultClone.removeAttribute("id");
+
   resultClone.querySelectorAll("[id]").forEach(element => {
     element.removeAttribute("id");
   });
@@ -2775,7 +2955,6 @@ function printResultDocument(mode = "semester") {
   window.addEventListener("afterprint", cleanup);
   window.print();
 
-  // Fallback for browsers that do not fire afterprint correctly.
   setTimeout(cleanup, 3000);
 }
 
@@ -2991,7 +3170,7 @@ function renderCompleteTranscript(student, results) {
 }
 
 function officialResultHeader(title) {
-  return `<header class="result-header"><img src="assets/images/logo.png" alt="School logo"><div><h1>SAHLAN COLLEGE OF HEALTH SCIENCE AND TECHNOLOGY, JOS</h1><h2>${escapeHtml(title)}</h2></div></header>`;
+  return `<header class="result-header"><img src="assets/images/logo.png" alt="School logo"><div><h1>${APP_CONFIG.schoolName}</h1><h2>${escapeHtml(title)}</h2></div></header>`;
 }
 
 function studentIdentitySection(student) {
@@ -3044,10 +3223,10 @@ function yearSummaryBlock(rows) {
 }
 
 function signatureSection() {
-  return `<section class="signature-grid">
-    <div><span></span><strong>Examination Officer</strong></div>
-    <div><span></span><strong>Head of Department</strong></div>
-    <div><span></span><strong>Registrar / Management</strong></div>
+  return `<section class="signature-grid management-signatures">
+    <div><span class="signature-space"></span><strong>Examination Officer</strong></div>
+    <div><span class="signature-space"></span><strong>Head of Department</strong></div>
+    <div><span class="signature-space"></span><strong>Registrar / Management</strong></div>
   </section>`;
 }
 
@@ -3165,7 +3344,9 @@ onAuthStateChanged(auth, async (user) => {
   await loadGradingSettings();
 
   if (user.isAnonymous) {
-    await renderPublicSessions();
+    if (!state.pendingStudentLogin) {
+      await renderPublicSessions();
+    }
     return;
   }
 
